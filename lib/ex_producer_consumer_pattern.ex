@@ -1,18 +1,11 @@
 defmodule ExProducerConsumerPattern do
-  @moduledoc """
-  Documentation for ExProducerConsumerPattern.
-  """
+  alias ExProducerConsumerPattern.{Producer, Consumer}
 
-  @doc """
-  Hello world.
+  def run(source) do
+    {:ok, pid} = Producer.start_link(source)
 
-  ## Examples
-
-      iex> ExProducerConsumerPattern.hello
-      :world
-
-  """
-  def hello do
-    :world
+    1..:erlang.system_info(:logical_processors)
+    |> Enum.map(&Task.async(fn -> Consumer.sink(&1, pid) end))
+    |> Enum.each(&Task.await(&1))
   end
 end
